@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gold Rates</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: right;
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            pointer-events: none; /* Makes the widget non-clickable */
+        }
+
+        .gain {
+            color: #0f0;
+        }
+
+        .loss {
+            color: #f00;
+        }
+    </style>
+</head>
+<body>
+    <div id="goldRates"></div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        async function loadGoldRates() {
+            const rates = await ipcRenderer.invoke('fetch-gold-rates');
+            if (rates.length === 2) {
+                const change24KClass = rates[0].Change >= 0 ? 'gain' : 'loss';
+                const change22KClass = rates[1].Change >= 0 ? 'gain' : 'loss';
+
+                document.getElementById('goldRates').innerHTML = 
+                    `24K Gold: ₹${rates[0].Price} <span class="${change24KClass}">(${rates[0].Change > 0 ? '▲' : '▼'}${rates[0].Change})</span><br>
+                     22K Gold: ₹${rates[1].Price} <span class="${change22KClass}">(${rates[1].Change > 0 ? '▲' : '▼'}${rates[1].Change})</span>`;
+            }
+        }
+
+        setInterval(loadGoldRates, 21600000); // Refresh every 6 hours
+        loadGoldRates();
+    </script>
+</body>
+</html>
